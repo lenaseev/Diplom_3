@@ -8,20 +8,20 @@ class PersonalAccountPage(BasePage):
     @allure.step("Открытие профиля пользователя")
     def open_profile(self):
         self.click(PersonalAccountLocators.PERSONAL_ACCOUNT_BUTTON)
-        self.wait.until(EC.visibility_of_element_located(PersonalAccountLocators.PROFILE_SECTION))
-        return self
+        self.wait_for_element_to_be_visible(PersonalAccountLocators.PROFILE_SECTION)
+
 
     @allure.step("Переход в раздел 'История заказов'")
     def open_order_history(self):
         self.click(PersonalAccountLocators.HISTORY_LINK)
         self.wait.until(EC.url_contains("order-history"))
-        return self
+
 
     @allure.step("Выход из аккаунта")
     def logout(self):
         self.click(PersonalAccountLocators.LOGOUT_BUTTON)
         self.wait.until(EC.url_to_be(Urls.LOGIN_PAGE))
-        return self
+
 
     @allure.step("Проверка отображения профиля")
     def is_profile_visible(self):

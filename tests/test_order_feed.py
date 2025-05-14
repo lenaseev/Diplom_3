@@ -74,9 +74,10 @@ class TestOrderFeed:
         # Дополняем номер заказа нулями до 7 символов
         created_order_number = created_order_number.zfill(7)
         main_page.close_modal()
-        main_page = MainPage(authorized_driver).open(Urls.ORDER_FEED)
-        # Получаем все номера заказов в разделе "В работе"
-        in_progress_orders = main_page.get_orders_in_progress_numbers()
+        # Переход в Ленту заказов и получение заказов "В работе"
+        order_feed = OrderFeedPage(authorized_driver).open()
+        in_progress_orders = order_feed.get_orders_in_progress_numbers()
+
         assert created_order_number in in_progress_orders, (
             f"Ожидался заказ №{created_order_number} в разделе 'В работе', "
             f"но его нет среди: {in_progress_orders}"

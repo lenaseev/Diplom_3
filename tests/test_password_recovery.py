@@ -15,7 +15,7 @@ class TestPasswordRecovery:
         recovery_page.enter_email("test@yandex.ru")
         recovery_page.click_recover_button()
 
-        assert driver.current_url == Urls.FORGOT_PASSWORD, "Не перешли на главную страницу"
+        assert recovery_page.get_current_url() == Urls.FORGOT_PASSWORD, "Не перешли на главную страницу"
 
     @allure.title("Тест перехода на страницу восстановления пароля по кнопке «Восстановить пароль»")
     def test_navigate_to_recovery_page(self, driver):
@@ -23,7 +23,7 @@ class TestPasswordRecovery:
 
         recovery_page.open(Urls.LOGIN_PAGE)
         recovery_page.click_recover_password()
-        assert "forgot-password" in driver.current_url, "Не перешли на страницу восстановления пароля"
+        assert "forgot-password" in recovery_page.get_current_url(), "Не перешли на страницу восстановления пароля"
 
     @allure.title("Тест переключения видимости пароля")
     def test_password_visibility_toggle(self, driver):

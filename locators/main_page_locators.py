@@ -28,6 +28,6 @@ class MainPageLocators:
     ORDER_NUMBER_MODAL = (By.CSS_SELECTOR, "h2.Modal_modal__title__2L34m.text_type_digits-large")
 
     # Локатор для номера заказов в разделе "В работе"
-    IN_PROGRESS_ORDER = "li.text.text_type_digits-default.mb-2"
+    IN_PROGRESS_ORDER = (By.CSS_SELECTOR, "li.text.text_type_digits-default.mb-2")
     PERSONAL_ACCOUNT_BUTTON = (By.XPATH, "//p[text()='Личный Кабинет']")
     PROFILE_SECTION = (By.XPATH, "//a[text()='Профиль']")

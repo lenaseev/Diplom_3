@@ -2,7 +2,6 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
 from locators.main_page_locators import MainPageLocators
 from pages.base_page import BasePage
-from selenium.webdriver.common.by import By
 import allure
 
 
@@ -11,26 +10,20 @@ class MainPage(BasePage):
     @allure.step("Клик по кнопке 'Конструктор'")
     def click_constructor(self):
         self.click(MainPageLocators.CONSTRUCTOR_LINK)
-        return self
 
     @allure.step("Клик по кнопке 'Лента заказов'")
     def click_order_feed(self):
         self.click(MainPageLocators.ORDER_FEED_LINK)
-        return self
 
     @allure.step("Открытие профиля")
     def open_profile(self):
         self.click(MainPageLocators.PERSONAL_ACCOUNT_BUTTON)
-        self.wait.until(EC.visibility_of_element_located(MainPageLocators.PROFILE_SECTION))
-        return self
+        self.wait_for_element_to_be_visible(MainPageLocators.PROFILE_SECTION)
 
     # Работа с ингредиентами
     @allure.step("Получение названий всех ингредиентов")
     def get_ingredient_names(self):
-        elements = self.wait.until(
-            EC.presence_of_all_elements_located(MainPageLocators.INGREDIENT_SECTION),
-            message="Не удалось найти ингредиенты"
-        )
+        elements = self.find_elements(MainPageLocators.INGREDIENT_SECTION)
         return [el.text for el in elements]
 
     @allure.step("Добавление ингредиента в заказ")
@@ -39,7 +32,7 @@ class MainPage(BasePage):
             MainPageLocators.INGREDIENT_ITEM,
             MainPageLocators.ORDER_ZONE
         )
-        return self
+
 
     @allure.step("Получение значения счётчика для ингредиента '{ingredient_name}'")
     def get_ingredient_counter(self, ingredient_name):
@@ -77,45 +70,42 @@ class MainPage(BasePage):
         locator = (MainPageLocators.INGREDIENT_ITEM[0],
                    f"{MainPageLocators.INGREDIENT_ITEM[1]}[contains(text(), '{name}')]")
         self.click(locator)
-        return self
+
 
     @allure.step("Клик по блоку деталей ингредиента")
     def click_ingredient_details(self):
         self.click(MainPageLocators.INGREDIENT_DETAILS)
-        return self
+
 
     # Модальное окно ингредиента/заказа
     @allure.step("Проверка отображения модального окна")
     def is_modal_visible(self):
         return self.is_element_visible(MainPageLocators.INGREDIENT_MODAL)
 
+    @allure.step("Проверка, что блок ингредиентов отображается")
+    def is_ingredient_block_visible(self):
+        return self.is_element_visible(MainPageLocators.INGREDIENT_SECTION)
+
     @allure.step("Закрытие модального окна")
     def close_modal(self):
         # Ждём исчезновения анимации загрузки, если она была
-        self.wait.until(EC.invisibility_of_element_located(MainPageLocators.MODAL_LOADING_ANIMATION))
-
-        # Ждём кликабельности кнопки и нажимаем
-        self.wait.until(EC.element_to_be_clickable(MainPageLocators.CLOSE_MODAL_BUTTON)).click()
+        self.wait_for_element_to_disappear(MainPageLocators.MODAL_LOADING_ANIMATION)
+        self.click(MainPageLocators.CLOSE_MODAL_BUTTON)
 
     @allure.step("Закрытие модального окна ингредиента")
     def close_modal_ingredients(self):
         # Ждём кликабельности кнопки и нажимаем
-        self.wait.until(EC.element_to_be_clickable(MainPageLocators.MODAL_CLOSE_INGREDIENTS)).click()
-
+        self.click(MainPageLocators.MODAL_CLOSE_INGREDIENTS)
 
     # Оформление заказа
     @allure.step("Нажатие кнопки 'Оформить заказ'")
     def place_order(self):
         self.click(MainPageLocators.PLACE_ORDER_BUTTON)
-        return self
 
     @allure.step("Ожидание обработки заказа (отображение номера)")
     def wait_for_order_processed(self, timeout=10):
-        self.wait.until(
-            EC.visibility_of_element_located(MainPageLocators.ORDER_NUMBER),
-            message=f"Модальное окно заказа не появилось за {timeout} секунд"
-        )
-        return self
+        self.wait_for_element_to_be_visible(MainPageLocators.ORDER_NUMBER)
+
 
     @allure.step("Получение номера заказа")
     def get_order_number(self):
@@ -124,21 +114,16 @@ class MainPage(BasePage):
 
     @allure.step("Получение номера созданного заказа из модального окна")
     def get_created_order_number(self):
-        element = self.wait.until(EC.visibility_of_element_located(MainPageLocators.ORDER_MODAL))
-        return element.text.strip().lstrip("#")
+        return self.get_element_text(MainPageLocators.ORDER_NUMBER)
 
     @allure.step("Получение номера заказа из модального окна")
     def get_order_number_from_modal(self):
-        # Ждём, пока появится номер заказа
-        order_number_element = WebDriverWait(self.driver, 20).until(
-            EC.visibility_of_element_located(MainPageLocators.ORDER_NUMBER_MODAL)
+        order_number_element = self.wait_for_custom_condition(
+            EC.visibility_of_element_located(MainPageLocators.ORDER_NUMBER_MODAL), timeout=20
         )
-
-        # Ждём, пока пропадёт анимация загрузки
-        WebDriverWait(self.driver, 20).until(
-            EC.invisibility_of_element_located(MainPageLocators.MODAL_LOADING_ANIMATION)
+        self.wait_for_custom_condition(
+            EC.invisibility_of_element_located(MainPageLocators.MODAL_LOADING_ANIMATION), timeout=20
         )
-
 
         order_number = order_number_element.text.strip()
         print(f"Полученный номер заказа из модального окна: {order_number}")
@@ -147,11 +132,4 @@ class MainPage(BasePage):
     @allure.step("Форматирование номера заказа '{number}'")
     def format_order_number(self, number):
         return number.strip().zfill(7)
-
-    @allure.step("Получение номеров заказов в разделе 'В работе'")
-    def get_orders_in_progress_numbers(self):
-        elements = WebDriverWait(self.driver, 10).until(
-            EC.visibility_of_all_elements_located((By.CSS_SELECTOR, MainPageLocators.IN_PROGRESS_ORDER))
-        )
-        return [el.text.strip() for el in elements if el.text.strip()]
 
