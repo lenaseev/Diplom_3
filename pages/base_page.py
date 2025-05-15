@@ -69,3 +69,9 @@ class BasePage:
     def wait_for_element_to_disappear(self, locator, timeout=10):
         """Ожидает исчезновение элемента"""
         WebDriverWait(self.driver, timeout).until(EC.invisibility_of_element_located(locator))
+
+    def wait_for_url_to_contain(self, partial_url, timeout=10):
+        return self.wait_for_custom_condition(EC.url_contains(partial_url), timeout)
+
+    def wait_for_url_to_be(self, url, timeout=10):
+        return self.wait_for_custom_condition(EC.url_to_be(url), timeout)

@@ -1,5 +1,4 @@
 import allure
-from selenium.webdriver.support import expected_conditions as EC
 from locators.recovery_locators import RecoveryPageLocators
 from pages.base_page import BasePage
 from urls import Urls
@@ -24,7 +23,7 @@ class RecoveryPage(BasePage):
     @allure.step("Получение состояния поля пароля")
     def get_password_field_state(self):
         container = self.wait_for_element_to_be_visible(RecoveryPageLocators.PASSWORD_CONTAINER)
-        password_input = self.driver.find_element(*RecoveryPageLocators.PASSWORD_NEW_INPUT)
+        password_input = self.find_element(RecoveryPageLocators.PASSWORD_NEW_INPUT)
 
         return {
             'is_active': 'input_status_active' in container.get_attribute('class'),
@@ -49,7 +48,7 @@ class RecoveryPage(BasePage):
     @allure.step("Проверка успешного входа")
     def is_login_successful(self):
         try:
-            self.wait.until(EC.url_to_be(Urls.BASE_URL))
+            self.wait_for_url_to_be(Urls.BASE_URL)
             return True
         except:
             return False

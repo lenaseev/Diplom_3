@@ -1,5 +1,3 @@
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.support.wait import WebDriverWait
 from locators.main_page_locators import MainPageLocators
 from pages.base_page import BasePage
 import allure
@@ -36,7 +34,7 @@ class MainPage(BasePage):
 
     @allure.step("Получение значения счётчика для ингредиента '{ingredient_name}'")
     def get_ingredient_counter(self, ingredient_name):
-        elements = self.driver.find_elements(*MainPageLocators.INGREDIENT_ITEM)
+        elements = self.find_elements(MainPageLocators.INGREDIENT_ITEM)
         for el in elements:
             name = el.find_element(*MainPageLocators.INGREDIENT_NAME)
             if name.text.strip() == ingredient_name:
@@ -51,10 +49,10 @@ class MainPage(BasePage):
     @allure.step("Получение значения счётчика (если > 0)")
     def get_counter_value(self):
         try:
-            WebDriverWait(self.driver, 5).until(
+            self.wait_for_custom_condition(
                 lambda d: any(int(el.text) > 0 for el in d.find_elements(*MainPageLocators.INGREDIENT_COUNTER))
             )
-            counters = self.driver.find_elements(*MainPageLocators.INGREDIENT_COUNTER)
+            counters = self.find_elements(MainPageLocators.INGREDIENT_COUNTER)
             for counter in counters:
                 if counter.is_displayed() and counter.text.isdigit():
                     value = int(counter.text)
@@ -109,7 +107,6 @@ class MainPage(BasePage):
 
     @allure.step("Получение номера заказа")
     def get_order_number(self):
-        self.wait.until(EC.visibility_of_element_located(MainPageLocators.ORDER_NUMBER))
         return self.get_element_text(MainPageLocators.ORDER_NUMBER)
 
     @allure.step("Получение номера созданного заказа из модального окна")
@@ -119,15 +116,10 @@ class MainPage(BasePage):
     @allure.step("Получение номера заказа из модального окна")
     def get_order_number_from_modal(self):
         order_number_element = self.wait_for_custom_condition(
-            EC.visibility_of_element_located(MainPageLocators.ORDER_NUMBER_MODAL), timeout=20
+            lambda d: self.find_element(MainPageLocators.ORDER_NUMBER_MODAL), timeout=20
         )
-        self.wait_for_custom_condition(
-            EC.invisibility_of_element_located(MainPageLocators.MODAL_LOADING_ANIMATION), timeout=20
-        )
-
-        order_number = order_number_element.text.strip()
-        print(f"Полученный номер заказа из модального окна: {order_number}")
-        return order_number
+        self.wait_for_element_to_disappear(MainPageLocators.MODAL_LOADING_ANIMATION, timeout=20)
+        return order_number_element.text.strip()
 
     @allure.step("Форматирование номера заказа '{number}'")
     def format_order_number(self, number):

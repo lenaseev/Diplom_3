@@ -2,7 +2,6 @@
 import allure
 from selenium.common import TimeoutException
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.support.wait import WebDriverWait
 from locators.order_feed_locators import OrderFeedPageLocators
 from pages.base_page import BasePage
 from urls import Urls
@@ -15,8 +14,7 @@ class OrderFeedPage(BasePage):
 
     @allure.step("Открытие браузера")
     def open(self):
-        self.driver.get(Urls.ORDER_FEED)
-        return self
+        return super().open(Urls.ORDER_FEED)
 
 
     @allure.step("Клик на первый заказ")
@@ -82,10 +80,7 @@ class OrderFeedPage(BasePage):
     @allure.step("Переход на страницу: {url}")
     def go_to_page(self, url):
         self.open(url)
-        self.wait_for_custom_condition(
-            lambda d: d.find_element(*OrderFeedPageLocators.PAGE_HEADER),
-            timeout=10
-        )
+        self.wait_for_element_to_be_visible(OrderFeedPageLocators.PAGE_HEADER)
 
     @allure.step("Получение номера заказа на странице Ленты заказов")
     def get_order_number(self):
@@ -94,19 +89,17 @@ class OrderFeedPage(BasePage):
     @allure.step("Переход на страницу 'История заказов'")
     def go_to_history_page(self):
         self.click(OrderFeedPageLocators.HISTORY_PAGE_LINK)
-        self.is_element_visible(OrderFeedPageLocators.HISTORY_PAGE_HEADER)
+        self.wait_for_element_to_be_visible(OrderFeedPageLocators.HISTORY_PAGE_HEADER)
 
     @allure.step("Переход на страницу 'Лента заказов'")
     def go_to_order_feed_page(self):
         self.click(OrderFeedPageLocators.PAGE_HEADER)
-        self.is_element_visible(OrderFeedPageLocators.ORDER_NUMBER)
+        self.wait_for_element_to_be_visible(OrderFeedPageLocators.ORDER_NUMBER)
 
     @allure.step("Открытие профиля")
     def open_profile(self):
         self.click(OrderFeedPageLocators.PERSONAL_ACCOUNT_BUTTON)
-        self.wait_for_custom_condition(
-            EC.visibility_of_element_located(OrderFeedPageLocators.PROFILE_SECTION)
-        )
+        self.wait_for_element_to_be_visible(OrderFeedPageLocators.PROFILE_SECTION)
 
 
     @allure.step("Открытие истории заказов")
@@ -131,8 +124,9 @@ class OrderFeedPage(BasePage):
     @allure.step("Получение номеров заказов из раздела 'В работе'")
     def get_orders_in_progress_numbers(self, timeout=10):
         try:
-            elements = WebDriverWait(self.driver, timeout).until(
-                EC.visibility_of_all_elements_located(OrderFeedPageLocators.ORDERS_IN_PROGRESS_NUMBERS)
+            elements = self.wait_for_custom_condition(
+                EC.visibility_of_all_elements_located(OrderFeedPageLocators.ORDERS_IN_PROGRESS_NUMBERS),
+                timeout=timeout
             )
             return [el.text.strip().replace('#', '') for el in elements if el.text.strip()]
         except TimeoutException:
